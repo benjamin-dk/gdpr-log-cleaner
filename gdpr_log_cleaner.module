@@ -23,8 +23,8 @@ function gdpr_log_cleaner_permission() {
 function gdpr_log_cleaner_menu() {
   $items = array();
 
-  $items['admin/config/development/gdpr_log_cleaner'] = array(
-    'title' => 'GDPR log cleaner administration',
+  $items['admin/config/system/gdpr_log_cleaner'] = array(
+    'title' => 'GDPR log cleaner',
     'description' => 'Administration pages for GDPR log cleaner.',
     'type' => MENU_NORMAL_ITEM,
     'weight' => 1,
@@ -46,6 +46,7 @@ function gdpr_log_cleaner_admin() {
     '#size' => 3,
     '#default_value' => variable_get('gdpr_log_cleaner_timelimit', 180),
     '#maxlength' => 10,
+    '#element_validate' => array('element_validate_integer_positive')
   );
 
   return system_settings_form($form);
@@ -62,13 +63,13 @@ function gdpr_log_cleaner_cron() {
   $login_history_enabled = module_exists('login_history');
 
   // Get the number of days to keep log entries.
-  $clean_timelimit = variable_get('gdpr_log_cleaner_timelimit', 180);
+  $clean_timelimit = check_plain(variable_get('gdpr_log_cleaner_timelimit', 180));
 
   if ($dblog_enabled) {
     // Get the first row that is older than timelimit and delete all rows older than that
     if ($clean_timelimit > 0) {
       // Make sure that the dblog module is configured to keep all messages
-      $row_limit = variable_get('dblog_row_limit', 0);
+      $row_limit = variable_get('dblog_row_limit', 1000);
       if ($row_limit !== 0) {
         variable_set('dblog_row_limit', 0);
         watchdog('gdpr_log_cleaner','The dblog module row limit has been adjusted to "Keep all". This is needed to enforce time based pruning.');
